@@ -21,6 +21,8 @@ class DataManager: NSObject  {
         return (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     }
     
+    var parserCities: XMLParserCities?
+    
     var timer: Timer!
     
     var timeStamp: TimeStamp? {
@@ -37,24 +39,12 @@ class DataManager: NSObject  {
         return false
     }
     
-    var isTimeValid: (NSDate) -> (Bool) = {
-        return Int(NSDate().timeIntervalSinceDate($0)) < 30
-    }
-    
     var existedCities: [City] {
         var existed = [City]()
         if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "City")) as! [City] {
             existed.appendContentsOf(fetchedObjects)
         }
         return existed
-    }
-
-    var existedCitiesNames: ([City]) -> ([String]) = {
-        var names = [String]()
-        for object in $0 {
-            names.append(object.name!)
-        }
-        return names
     }
     
     override init() {
@@ -68,13 +58,26 @@ class DataManager: NSObject  {
         print("DataManager is deallocated.")
     }
     
+    func isTimeValid (date: NSDate) -> Bool {
+        return NSDate().timeIntervalSinceDate(date) < (Defaults.duration - 1)
+    }
+    
+    func existedCitiesNames (cities: [City]) -> [String] {
+        var names = [String]()
+        for object in cities {
+            names.append(object.name!)
+        }
+        return names
+    }
+    
     func loadCities () {
         
         print("\nIs data valid: \(isDataValid)")
         
-        if !isDataValid {
+        if !isDataValid && parserCities == nil {
             currentApplication.networkActivityIndicatorVisible = true
-            XMLParserCities(handler: loadCitiesHandler).startParse()
+            parserCities = XMLParserCities(handler: loadCitiesHandler)
+            parserCities!.startParse()
         }
     }
     
@@ -133,6 +136,7 @@ class DataManager: NSObject  {
             
             print("XML is successfully loaded.")
             
+            self.parserCities = nil
             self.currentApplication.networkActivityIndicatorVisible = false
         });
     }
