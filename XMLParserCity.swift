@@ -8,21 +8,26 @@
 
 import UIKit
 
-protocol XMLParserCDelegate: NSObjectProtocol {
-    func XMLParserC(didFinish dict: [String: String], city: City)
-}
-
 class XMLParserCity: NSObject, NSXMLParserDelegate {
 
-    weak var delegate: XMLParserCDelegate?
+    var handler: ([String:String], City) -> ()
     
     var isFact = false
     var tempCity: City!
     var tempDict: [String:String]?
     var tempCurrentType: String?
     
+    init(city: City, handler: ([String:String], City) -> ()) {
+        self.tempCity = city
+        self.handler = handler
+    }
+    
+    deinit {
+        print("XMLParserCity is deallocated.")
+    }
+    
     func startParse () {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { [unowned self] in 
             if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://export.yandex.ru/weather-ng/forecasts/\(self.tempCity.id!).xml")!) {
                 parser.delegate = self
                 parser.parse()
@@ -30,14 +35,10 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
         })
     }
     
-    init(city: City) {
-        super.init()
-        tempCity = city
-    }
-    
     // MARK: - XMLParserDelegate
     
     func parserDidStartDocument(parser: NSXMLParser) {
+        print("Parser did start document.")
         tempDict = [String:String]()
     }
     
@@ -71,7 +72,7 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
     func parserDidEndDocument(parser: NSXMLParser) {
         print("Parser did end document.")
         if let dict = tempDict {
-            self.delegate?.XMLParserC(didFinish: dict, city: tempCity)
+            handler(dict,tempCity)
         }
     }
     

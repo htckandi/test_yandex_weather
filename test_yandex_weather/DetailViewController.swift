@@ -24,7 +24,7 @@ class DetailViewController: UITableViewController, NSFetchedResultsControllerDel
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = city?.name
-        timer = Timer(duration: 31, handler: { [unowned self] in self.configureView()})
+        timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.configureView()})
         timer.start()
     }
     

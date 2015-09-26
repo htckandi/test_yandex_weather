@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		520A0E4C1BB70AEA009918C4 /* CancelableTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520A0E4B1BB70AEA009918C4 /* CancelableTimer.swift */; settings = {ASSET_TAGS = (); }; };
 		520A0E501BB72067009918C4 /* Timer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520A0E4F1BB72067009918C4 /* Timer.swift */; settings = {ASSET_TAGS = (); }; };
+		520A0E521BB725B3009918C4 /* Defaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 520A0E511BB725B3009918C4 /* Defaults.swift */; settings = {ASSET_TAGS = (); }; };
 		5249D7901BB5B5C4007DE46F /* XMLParserCities.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5249D78F1BB5B5C4007DE46F /* XMLParserCities.swift */; settings = {ASSET_TAGS = (); }; };
 		5252C9A81BB6BEED00AD42FC /* XMLParserCity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252C9A71BB6BEED00AD42FC /* XMLParserCity.swift */; settings = {ASSET_TAGS = (); }; };
 		52705EE11BB51F9D00CD8331 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52705EE01BB51F9D00CD8331 /* AppDelegate.swift */; };
@@ -46,8 +46,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		520A0E4B1BB70AEA009918C4 /* CancelableTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CancelableTimer.swift; sourceTree = "<group>"; };
 		520A0E4F1BB72067009918C4 /* Timer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Timer.swift; sourceTree = "<group>"; };
+		520A0E511BB725B3009918C4 /* Defaults.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Defaults.swift; sourceTree = "<group>"; };
 		5249D78F1BB5B5C4007DE46F /* XMLParserCities.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XMLParserCities.swift; sourceTree = "<group>"; };
 		5252C9A71BB6BEED00AD42FC /* XMLParserCity.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XMLParserCity.swift; sourceTree = "<group>"; };
 		52705EDD1BB51F9D00CD8331 /* test_yandex_weather.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = test_yandex_weather.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -121,8 +121,8 @@
 		52705ED41BB51F9D00CD8331 = {
 			isa = PBXGroup;
 			children = (
+				520A0E511BB725B3009918C4 /* Defaults.swift */,
 				520A0E4F1BB72067009918C4 /* Timer.swift */,
-				520A0E4B1BB70AEA009918C4 /* CancelableTimer.swift */,
 				5252C9A61BB6BD5400AD42FC /* Entities */,
 				5252C9A51BB6BD4900AD42FC /* Data */,
 				52705EDF1BB51F9D00CD8331 /* test_yandex_weather */,
@@ -308,7 +308,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				52B0AE6E1BB526E300F2635C /* MasterViewController.swift in Sources */,
-				520A0E4C1BB70AEA009918C4 /* CancelableTimer.swift in Sources */,
+				520A0E521BB725B3009918C4 /* Defaults.swift in Sources */,
 				52705EE91BB51F9D00CD8331 /* test_yandex_weather.xcdatamodeld in Sources */,
 				520A0E501BB72067009918C4 /* Timer.swift in Sources */,
 				52B0AE721BB5270500F2635C /* MasterCell.swift in Sources */,

@@ -7,10 +7,9 @@
 //
 
 import UIKit
-import Foundation
 import CoreData
 
-class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParserCDelegate {
+class DataManager: NSObject  {
     
     static let sharedManager = DataManager()
     
@@ -22,7 +21,7 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         return (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     }
     
-    var timer: CancelableTimer!
+    var timer: Timer!
     
     var timeStamp: TimeStamp? {
         if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "TimeStamp")), let object = fetchedObjects.first as? TimeStamp {
@@ -60,12 +59,13 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
     
     override init() {
         super.init()
-        timer = CancelableTimer(once: false, handler: { self.loadCities() })
-        timer.startWithInterval(3600)
+        timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.loadCities() })
+        timer.start()
     }
     
     deinit {
-        timer.cancel()
+        timer.stop()
+        print("DataManager is deallocated.")
     }
     
     func loadCities () {
@@ -73,20 +73,16 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         print("\nIs data valid: \(isDataValid)")
         
         if !isDataValid {
-            
             currentApplication.networkActivityIndicatorVisible = true
-            
-            let parser = XMLParserCities()
-            parser.delegate = self
-            parser.startParse()
+            XMLParserCities(handler: loadCitiesHandler).startParse()
         }
     }
     
-    func XMLParserCs(didFinish dict:[String:[String : String]]) {
+    func loadCitiesHandler (dict: [String:[String:String]]) {
         
         let existedCs = existedCities
         let existedCsNames = existedCitiesNames(existedCs)
-    
+        
         let predicateToDelete = NSPredicate(format: "NOT SELF.name IN %@", [String](dict.keys))
         let predicateToUpdate = NSPredicate(format: "SELF.name IN %@", [String](dict.keys))
         let predicateToInsert = NSPredicate(format: "NOT SELF IN %@", existedCsNames)
@@ -98,7 +94,7 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         
         print("\nto Delete: \(arraytoDelete.count)\nto Update: \(arrayToUpdate.count)\nto Insert: \(arrayToInsert.count)\n")
         
-        dispatch_async(dispatch_get_main_queue(), {
+        dispatch_async(dispatch_get_main_queue(), { [unowned self] in
             
             // Delete
             
@@ -141,9 +137,6 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         });
     }
     
-    
-    
-    
     func loadCity (city: City) {
         
         if city.weather == nil {
@@ -151,26 +144,22 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
             print("Will load weather for city: \(city.name!)")
             
             currentApplication.networkActivityIndicatorVisible = true
-            
-            let parser = XMLParserCity(city: city)
-            parser.delegate = self
-            parser.startParse()
+            XMLParserCity(city: city, handler: loadCityHandler).startParse()
+
         } else if !isTimeValid(city.weather!.timeStamp!) {
             
             print("Will update weather for city: \(city.name!)")
             
             currentApplication.networkActivityIndicatorVisible = true
+            XMLParserCity(city: city, handler: loadCityHandler).startParse()
             
-            let parser = XMLParserCity(city: city)
-            parser.delegate = self
-            parser.startParse()
         } else {
             print("The weather is actuale for city: \(city.name!)")
         }
     }
     
-    func XMLParserC(didFinish dict: [String : String], city: City) {
-        dispatch_async(dispatch_get_main_queue(), {
+    func loadCityHandler (dict: [String:String], city: City) {
+        dispatch_async(dispatch_get_main_queue(), { [unowned self] in
             
             let weather = city.weather ?? NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: self.managedObjectContext) as! CityWeather
             weather.temperature = dict["temperature"]
