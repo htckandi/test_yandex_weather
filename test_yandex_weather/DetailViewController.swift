@@ -7,10 +7,13 @@
 //
 
 import UIKit
+import CoreData
 
-class DetailViewController: UITableViewController {
+class DetailViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
-    var detailItem: City? {
+    var dataManager = DataManager.sharedManager
+    
+    var city: City? {
         didSet {
             configureView()
         }
@@ -19,18 +22,22 @@ class DetailViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        self.title = detailItem?.name
+        self.title = city?.name
+        
+        
+
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     // MARK: - Convenience
     
     func configureView () {
-        
+        if let cityID = city?.id {
+            dataManager.loadCity(cityID)
+        }
     }
 
     // MARK: - Table view data source
@@ -46,4 +53,32 @@ class DetailViewController: UITableViewController {
         return cell
     }
 
+    // MARK: - Fetched results controller
+    
+    var fetchedResultsController: NSFetchedResultsController {
+        if _fetchedResultsController != nil {
+            return _fetchedResultsController!
+        }
+        
+        let fetchRequest = NSFetchRequest(entityName: "CityWeather")
+        fetchRequest.fetchBatchSize = 20
+        fetchRequest.predicate = NSPredicate(format: "city == %@", [city!])
+        
+        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataManager.managedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
+        aFetchedResultsController.delegate = self
+        _fetchedResultsController = aFetchedResultsController
+        
+        do {
+            try _fetchedResultsController!.performFetch()
+        } catch {
+            print("Unresolved error \(error)")
+        }
+        
+        return _fetchedResultsController!
+    }
+    var _fetchedResultsController: NSFetchedResultsController? = nil
+    
+    func controllerDidChangeContent(controller: NSFetchedResultsController) {
+        self.tableView.reloadData()
+    }
 }

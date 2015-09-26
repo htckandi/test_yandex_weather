@@ -15,7 +15,6 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         dataManager.loadCities()
     }
 
@@ -29,7 +28,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
                 let controller = segue.destinationViewController as! DetailViewController
-                controller.detailItem = fetchedResultsController.objectAtIndexPath(indexPath) as? City
+                controller.city = fetchedResultsController.objectAtIndexPath(indexPath) as? City
             }
         }
     }

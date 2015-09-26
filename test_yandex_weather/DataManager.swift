@@ -10,11 +10,11 @@ import UIKit
 import Foundation
 import CoreData
 
-class DataManager: NSObject, NSXMLParserDelegate {
+class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParserCDelegate {
     
     static let sharedManager = DataManager()
     
-    var appDelegate: UIApplication {
+    var currentApplication: UIApplication {
         return UIApplication.sharedApplication()
     }
     
@@ -22,18 +22,7 @@ class DataManager: NSObject, NSXMLParserDelegate {
         return (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     }
     
-    var myQueue: dispatch_queue_t?
-    
-    var XMLParserCities: NSXMLParser?
-    var XMLParserCity: NSXMLParser?
-
-    var URLCities: NSURL? {
-        return NSURL(string: "https://pogoda.yandex.ru/static/cities.xml")
-    }
-    
-    var URLCity: (String) -> (NSURL?) = {
-        return NSURL(string: "https://export.yandex.ru/weather-ng/forecasts/\($0).xml)")
-    }
+    var timer: NSTimer!
     
     var isDataValid: Bool {
         var tempVar = false
@@ -44,18 +33,28 @@ class DataManager: NSObject, NSXMLParserDelegate {
     }
     
     var isTimeValid: (NSDate) -> (Bool) = {
-        return Int($0.timeIntervalSinceDate(NSDate())/3600) < 1
+        return Int(NSDate().timeIntervalSinceDate($0)) < 60
     }
     
-    var timer: NSTimer!
-    
-    var tempCities: [String:[String: String]]?
-    var tempCurrentCityAttributes: [String: String]?
-    var tempCurrentCityName: String?
+    var existedCities: [City] {
+        var existed = [City]()
+        if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "City")) as! [City] {
+            existed.appendContentsOf(fetchedObjects)
+        }
+        return existed
+    }
+
+    var existedCitiesNames: ([City]) -> ([String]) = {
+        var names = [String]()
+        for object in $0 {
+            names.append(object.name!)
+        }
+        return names
+    }
     
     override init() {
         super.init()
-        timer = NSTimer.scheduledTimerWithTimeInterval(3600, target: self, selector: "loadCities", userInfo: nil, repeats: true)
+        timer = NSTimer.scheduledTimerWithTimeInterval(61, target: self, selector: "loadCities", userInfo: nil, repeats: true)
     }
     
     deinit {
@@ -64,83 +63,77 @@ class DataManager: NSObject, NSXMLParserDelegate {
     
     func loadCities () {
         
-        print(isDataValid)
+        print("\nIs data valid: \(isDataValid)")
         
         if !isDataValid {
-            if XMLParserCities == nil {
-                if let XMLurl = URLCities, let XMLParser = NSXMLParser(contentsOfURL: XMLurl) {
-                    myQueue = dispatch_queue_create("myQueue", nil)
-                    dispatch_async(myQueue!, {
-                        self.XMLParserCities = XMLParser
-                        self.XMLParserCities!.delegate = self
-                        self.XMLParserCities!.parse()
-                    })
+            
+            currentApplication.networkActivityIndicatorVisible = true
+            
+            let parser = XMLParserCities()
+            parser.delegate = self
+            parser.startParse()
+        }
+    }
+    
+    func XMLParserCs(didFinish dict:[String:[String : String]]) {
+        
+        let existedCs = existedCities
+        let existedCsNames = existedCitiesNames(existedCs)
+    
+        let predicateToDelete = NSPredicate(format: "NOT SELF.name IN %@", [String](dict.keys))
+        let predicateToInsert = NSPredicate(format: "NOT SELF IN %@", existedCsNames)
+        
+        let arraytoDelete = existedCs.filter({predicateToDelete.evaluateWithObject($0)})
+        let arrayToInsert = [String](dict.keys).filter({predicateToInsert.evaluateWithObject($0)})
+        
+        print("\nto Delete: \(arraytoDelete.count)\nto Insert: \(arrayToInsert.count)\n")
+        
+        dispatch_async(dispatch_get_main_queue(), {
+            
+            // Delete
+            
+            if !arraytoDelete.isEmpty {
+                for object in arraytoDelete {
+                    self.managedObjectContext.deleteObject(object)
                 }
             }
-        }
-    }
-    
-    // MARK: - XMLParserDelegate
-    
-    func parserDidStartDocument(parser: NSXMLParser) {
-        tempCities = [String:[String: String]]()
-    }
-    
-    func parser(parser: NSXMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
-        if elementName == "city" {
-            tempCurrentCityAttributes = attributeDict
-        }
-    }
-    
-    func parser(parser: NSXMLParser, foundCharacters string: String) {
-        if tempCurrentCityAttributes != nil {
-            tempCurrentCityName = string
-        }
-    }
-    
-    func parser(parser: NSXMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        if elementName == "city", let cityName = tempCurrentCityName, let cityAttributes = tempCurrentCityAttributes {
-            tempCities![cityName] = cityAttributes
-        }
-        tempCurrentCityName = nil
-        tempCurrentCityAttributes = nil
-    }
-    
-    func parserDidEndDocument(parser: NSXMLParser) {
-        
-        if let cities = tempCities {
-            dispatch_async(dispatch_get_main_queue(), {
-                self.deleteAllCities()
-                self.createNewCities(cities)
-            });
-        }
-        
-        tempCities = nil
-        XMLParserCities = nil
-        XMLParserCity = nil
-        myQueue = nil
-    }
-    
-    // MARK: - Convenience
-    
-    func deleteAllCities () {
-        if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "City")) {
-            for object in fetchedObjects as! [City] {
-                managedObjectContext.deleteObject(object)
+            
+            // Insert
+            
+            if !arrayToInsert.isEmpty {
+                let timeStamp = NSDate()
+                for name in arrayToInsert {
+                    let entity = NSEntityDescription.insertNewObjectForEntityForName("City", inManagedObjectContext: self.managedObjectContext) as! City
+                    entity.timeStamp = timeStamp
+                    entity.name = name
+                    entity.country = dict[name]!["country"]
+                    entity.id = dict[name]!["id"]
+                }
             }
-        }
+            
+            print("XML is successfully loaded.")
+            
+            self.currentApplication.networkActivityIndicatorVisible = false
+        });
     }
-
-    func createNewCities (cities: [String : [String : String]]) {
+    
+    func loadCity (name: String) {
         
-        let timeStamp = NSDate()
+        currentApplication.networkActivityIndicatorVisible = true
         
-        for (cityName, cityAttributes) in cities {
-            let entity = NSEntityDescription.insertNewObjectForEntityForName("City", inManagedObjectContext: managedObjectContext) as! City
-            entity.timeStamp = timeStamp
-            entity.name = cityName
-            entity.country = cityAttributes["country"]
-            entity.id = cityAttributes["id"]
-        }
+        let parser = XMLParserCity(cityID: name)
+        parser.delegate = self
+        parser.startParse()
+        
     }
+    
+    func XMLParserC(didFinish dict: [String : String]) {
+        dispatch_async(dispatch_get_main_queue(), {
+            
+            print(dict)
+            
+            self.currentApplication.networkActivityIndicatorVisible = false
+        });
+    }
+    
 }
