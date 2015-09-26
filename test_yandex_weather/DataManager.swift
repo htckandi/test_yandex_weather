@@ -22,18 +22,24 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         return (UIApplication.sharedApplication().delegate as! AppDelegate).managedObjectContext
     }
     
-    var timer: NSTimer!
+    var timer: CancelableTimer!
+    
+    var timeStamp: TimeStamp? {
+        if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "TimeStamp")), let object = fetchedObjects.first as? TimeStamp {
+            return object
+        }
+        return nil
+    }
     
     var isDataValid: Bool {
-        var tempVar = false
-        if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "City")), let randomObject = fetchedObjects.first as? City where isTimeValid(randomObject.timeStamp!) {
-            tempVar = true
+        if let object = timeStamp where isTimeValid(object.time!) {
+            return true
         }
-        return tempVar
+        return false
     }
     
     var isTimeValid: (NSDate) -> (Bool) = {
-        return Int(NSDate().timeIntervalSinceDate($0)) < 60
+        return Int(NSDate().timeIntervalSinceDate($0)) < 30
     }
     
     var existedCities: [City] {
@@ -54,11 +60,12 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
     
     override init() {
         super.init()
-        timer = NSTimer.scheduledTimerWithTimeInterval(61, target: self, selector: "loadCities", userInfo: nil, repeats: true)
+        timer = CancelableTimer(once: false, handler: { self.loadCities() })
+        timer.startWithInterval(3600)
     }
     
     deinit {
-        timer.invalidate()
+        timer.cancel()
     }
     
     func loadCities () {
@@ -81,12 +88,15 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         let existedCsNames = existedCitiesNames(existedCs)
     
         let predicateToDelete = NSPredicate(format: "NOT SELF.name IN %@", [String](dict.keys))
+        let predicateToUpdate = NSPredicate(format: "SELF.name IN %@", [String](dict.keys))
         let predicateToInsert = NSPredicate(format: "NOT SELF IN %@", existedCsNames)
         
+        
         let arraytoDelete = existedCs.filter({predicateToDelete.evaluateWithObject($0)})
+        let arrayToUpdate = existedCs.filter({predicateToUpdate.evaluateWithObject($0)})
         let arrayToInsert = [String](dict.keys).filter({predicateToInsert.evaluateWithObject($0)})
         
-        print("\nto Delete: \(arraytoDelete.count)\nto Insert: \(arrayToInsert.count)\n")
+        print("\nto Delete: \(arraytoDelete.count)\nto Update: \(arrayToUpdate.count)\nto Insert: \(arrayToInsert.count)\n")
         
         dispatch_async(dispatch_get_main_queue(), {
             
@@ -98,18 +108,32 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
                 }
             }
             
+            // Update
+            
+            if !arrayToUpdate.isEmpty {
+                for object in arrayToUpdate {
+                    if object.id != dict[object.name!]!["id"] {
+                        object.id = dict[object.name!]!["id"]
+                    }
+                }
+            }
+            
             // Insert
             
             if !arrayToInsert.isEmpty {
-                let timeStamp = NSDate()
+                
                 for name in arrayToInsert {
                     let entity = NSEntityDescription.insertNewObjectForEntityForName("City", inManagedObjectContext: self.managedObjectContext) as! City
-                    entity.timeStamp = timeStamp
                     entity.name = name
                     entity.country = dict[name]!["country"]
                     entity.id = dict[name]!["id"]
                 }
             }
+            
+            // Update time stamp
+            
+            let stamp = self.timeStamp ?? NSEntityDescription.insertNewObjectForEntityForName("TimeStamp", inManagedObjectContext: self.managedObjectContext) as! TimeStamp
+            stamp.time = NSDate()
             
             print("XML is successfully loaded.")
             
@@ -117,20 +141,45 @@ class DataManager: NSObject, NSXMLParserDelegate, XMLParserCsDelegate, XMLParser
         });
     }
     
-    func loadCity (name: String) {
+    
+    
+    
+    func loadCity (city: City) {
         
-        currentApplication.networkActivityIndicatorVisible = true
-        
-        let parser = XMLParserCity(cityID: name)
-        parser.delegate = self
-        parser.startParse()
-        
+        if city.weather == nil {
+            
+            print("Will load weather for city: \(city.name!)")
+            
+            currentApplication.networkActivityIndicatorVisible = true
+            
+            let parser = XMLParserCity(city: city)
+            parser.delegate = self
+            parser.startParse()
+        } else if !isTimeValid(city.weather!.timeStamp!) {
+            
+            print("Will update weather for city: \(city.name!)")
+            
+            currentApplication.networkActivityIndicatorVisible = true
+            
+            let parser = XMLParserCity(city: city)
+            parser.delegate = self
+            parser.startParse()
+        } else {
+            print("The weather is actuale for city: \(city.name!)")
+        }
     }
     
-    func XMLParserC(didFinish dict: [String : String]) {
+    func XMLParserC(didFinish dict: [String : String], city: City) {
         dispatch_async(dispatch_get_main_queue(), {
             
-            print(dict)
+            let weather = city.weather ?? NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: self.managedObjectContext) as! CityWeather
+            weather.temperature = dict["temperature"]
+            weather.weatherType = dict["weather_type"]
+            weather.timeStamp = NSDate()
+            
+            if weather.city == nil {
+                weather.city = city
+            }
             
             self.currentApplication.networkActivityIndicatorVisible = false
         });

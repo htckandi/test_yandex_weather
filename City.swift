@@ -14,7 +14,6 @@ class City: NSManagedObject {
     @NSManaged var country: String?
     @NSManaged var id: String?
     @NSManaged var name: String?
-    @NSManaged var timeStamp: NSDate?
     @NSManaged var weather: CityWeather?
 
 // Insert code here to add functionality to your managed object subclass

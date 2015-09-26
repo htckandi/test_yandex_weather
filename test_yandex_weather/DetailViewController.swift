@@ -18,36 +18,40 @@ class DetailViewController: UITableViewController, NSFetchedResultsControllerDel
             configureView()
         }
     }
+    
+    var timer: Timer!
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         self.title = city?.name
-        
-        
-
+        timer = Timer(duration: 31, handler: { [unowned self] in self.configureView()})
+        timer.start()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
+    deinit {
+        timer.stop()
+        print("\nDetailViewController is deallocated.\n")
+    }
+    
+    
     // MARK: - Convenience
     
     func configureView () {
-        if let cityID = city?.id {
-            dataManager.loadCity(cityID)
+        if let object = city {
+            dataManager.loadCity(object)
         }
     }
 
     // MARK: - Table view data source
 
-
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return 1
     }
 
-    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("detailCell", forIndexPath: indexPath) as! DetailCell
         return cell

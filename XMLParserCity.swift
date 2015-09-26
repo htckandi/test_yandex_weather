@@ -9,7 +9,7 @@
 import UIKit
 
 protocol XMLParserCDelegate: NSObjectProtocol {
-    func XMLParserC(didFinish dict: [String: String])
+    func XMLParserC(didFinish dict: [String: String], city: City)
 }
 
 class XMLParserCity: NSObject, NSXMLParserDelegate {
@@ -17,22 +17,22 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
     weak var delegate: XMLParserCDelegate?
     
     var isFact = false
-    var tempCityID: String!
+    var tempCity: City!
     var tempDict: [String:String]?
     var tempCurrentType: String?
     
     func startParse () {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
-            if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://export.yandex.ru/weather-ng/forecasts/\(self.tempCityID).xml")!) {
+            if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://export.yandex.ru/weather-ng/forecasts/\(self.tempCity.id!).xml")!) {
                 parser.delegate = self
                 parser.parse()
             }
         })
     }
     
-    init(cityID: String) {
+    init(city: City) {
         super.init()
-        tempCityID = cityID
+        tempCity = city
     }
     
     // MARK: - XMLParserDelegate
@@ -71,7 +71,7 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
     func parserDidEndDocument(parser: NSXMLParser) {
         print("Parser did end document.")
         if let dict = tempDict {
-            self.delegate?.XMLParserC(didFinish: dict)
+            self.delegate?.XMLParserC(didFinish: dict, city: tempCity)
         }
     }
     

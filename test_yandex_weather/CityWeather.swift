@@ -11,7 +11,7 @@ import CoreData
 
 class CityWeather: NSManagedObject {
     
-    @NSManaged var temperature: NSNumber?
+    @NSManaged var temperature: String?
     @NSManaged var timeStamp: NSDate?
     @NSManaged var weatherType: String?
     @NSManaged var city: City?

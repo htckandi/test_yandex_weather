@@ -4,17 +4,20 @@
         <attribute name="country" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="id" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
-        <attribute name="timeStamp" optional="YES" attributeType="Date" syncable="YES"/>
         <relationship name="weather" optional="YES" maxCount="1" deletionRule="Cascade" destinationEntity="CityWeather" inverseName="city" inverseEntity="CityWeather" syncable="YES"/>
     </entity>
     <entity name="CityWeather" representedClassName=".CityWeather" syncable="YES">
-        <attribute name="temperature" optional="YES" attributeType="Integer 16" defaultValueString="0" syncable="YES"/>
+        <attribute name="temperature" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="timeStamp" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="weatherType" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="city" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="City" inverseName="weather" inverseEntity="City" syncable="YES"/>
     </entity>
+    <entity name="TimeStamp" representedClassName=".TimeStamp" syncable="YES">
+        <attribute name="time" optional="YES" attributeType="Date" syncable="YES"/>
+    </entity>
     <elements>
-        <element name="City" positionX="-317" positionY="18" width="128" height="118"/>
+        <element name="City" positionX="-317" positionY="18" width="128" height="103"/>
         <element name="CityWeather" positionX="-74" positionY="9" width="128" height="103"/>
+        <element name="TimeStamp" positionX="-587" positionY="47" width="128" height="58"/>
     </elements>
 </model>
