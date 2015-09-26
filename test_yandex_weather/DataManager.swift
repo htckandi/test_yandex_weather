@@ -94,7 +94,7 @@ class DataManager: NSObject  {
         
         print("\nto Delete: \(arraytoDelete.count)\nto Update: \(arrayToUpdate.count)\nto Insert: \(arrayToInsert.count)\n")
         
-        dispatch_async(dispatch_get_main_queue(), { [unowned self] in
+        dispatch_async(dispatch_get_main_queue(), {
             
             // Delete
             
@@ -159,7 +159,7 @@ class DataManager: NSObject  {
     }
     
     func loadCityHandler (dict: [String:String], city: City) {
-        dispatch_async(dispatch_get_main_queue(), { [unowned self] in
+        dispatch_async(dispatch_get_main_queue(), {
             
             let weather = city.weather ?? NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: self.managedObjectContext) as! CityWeather
             weather.temperature = dict["temperature"]

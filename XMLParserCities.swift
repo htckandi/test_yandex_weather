@@ -25,7 +25,7 @@ class XMLParserCities: NSObject, NSXMLParserDelegate {
     }
     
     func startParse () {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { [unowned self] in
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
             if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://pogoda.yandex.ru/static/cities.xml")!) {
                 parser.delegate = self
                 parser.parse()
