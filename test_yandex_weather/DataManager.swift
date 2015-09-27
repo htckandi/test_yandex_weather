@@ -47,17 +47,31 @@ class DataManager: NSObject  {
         return existed
     }
     
+    var isDataAccessible = true
+    
     override init() {
         super.init()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataUnavailable", name: Defaults.dataManagerDataUnavailable, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataNotAccessible:", name: Defaults.dataManagerDataNotAccessible, object: nil)
         timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.loadCities() })
         timer.start()
     }
     
-    func dataUnavailable () {
-        print("\nData unavailable.\n")
-        parserCities = nil
-        currentApplication.networkActivityIndicatorVisible = false
+    
+    func dataNotAccessible (notification: NSNotification) {
+        
+        dispatch_async(dispatch_get_main_queue(), {
+            
+            print("\nData unavailable.\n")
+            self.parserCities = nil
+            self.currentApplication.networkActivityIndicatorVisible = false
+            self.isDataAccessible = false
+            
+            if let object = notification.object as? String {
+                if object == "Cities" {
+                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerCitiesNotAccessible, object: nil)
+                }
+            }
+        })
     }
     
     deinit {
@@ -145,6 +159,7 @@ class DataManager: NSObject  {
             print("XML is successfully loaded.")
             
             self.parserCities = nil
+            self.isDataAccessible = true
             NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
             self.currentApplication.networkActivityIndicatorVisible = false
         });
@@ -183,6 +198,7 @@ class DataManager: NSObject  {
                 weather.city = city
             }
             
+            self.isDataAccessible = true
             NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
             self.currentApplication.networkActivityIndicatorVisible = false
         });
@@ -228,13 +244,14 @@ class DataManager: NSObject  {
                             entity.data = resizedData
                             entity.type = type
                             self.currentApplication.networkActivityIndicatorVisible = false
+                            self.isDataAccessible = true
                             print("Images is created. Data length is \(data.length). Resized data length is \(resizedData.length)")
                             NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
                         });
                     }
                 }
             } else {
-                NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDataUnavailable, object: "Image")
+                NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDataNotAccessible, object: "Image")
             }
         })
     }

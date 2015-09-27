@@ -11,15 +11,55 @@ import CoreData
 
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
+    
+    @IBOutlet weak var headerView: UILabel!
+    
     var dataManager = DataManager.sharedManager
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureHeader", name: Defaults.dataManagerCitiesNotAccessible, object: nil)
         dataManager.loadCities()
+    }
+    
+    deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+    }
+    
+    
+    @IBAction func refreshCities(sender: AnyObject) {
+        dataManager.loadCities()
+    }
+    
+    
+    func configureHeader () {
+        
+        var stringValid: String
+        
+        if fetchedResultsController.fetchedObjects?.count > 0 {
+            stringValid = dataManager.isDataValid ? "Data valid." : "Data not valid."
+        } else {
+            stringValid = "No data"
+        }
+        
+        var stringAccessible: String?
+        
+        if !dataManager.isDataAccessible {
+            stringAccessible = "\nNo data access."
+        }
+        
+        var headerString = stringValid
+        
+        if let string = stringAccessible {
+            headerString += string
+        }
+        
+        headerView.text = headerString
+        
     }
     
     // MARK: - Segues
@@ -36,6 +76,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Table view data source
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+        configureHeader()
         return fetchedResultsController.sections?.count ?? 0
     }
 

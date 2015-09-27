@@ -13,9 +13,16 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <label key="tableHeaderView" opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="2" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="ReS-Q9-TPH">
+                            <rect key="frame" x="0.0" y="64" width="320" height="64"/>
+                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                            <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                            <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                            <nil key="highlightedColor"/>
+                        </label>
                         <prototypes>
                             <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="masterCell" textLabel="k0a-6K-Jmo" style="IBUITableViewCellStyleDefault" id="lRN-Kc-4Tt" customClass="MasterCell" customModule="test_yandex_weather" customModuleProvider="target">
-                                <rect key="frame" x="0.0" y="92" width="320" height="44"/>
+                                <rect key="frame" x="0.0" y="156" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="lRN-Kc-4Tt" id="Ai9-W5-mmw">
                                     <rect key="frame" x="0.0" y="0.0" width="287" height="43"/>
@@ -40,7 +47,16 @@
                             <outlet property="delegate" destination="ZAj-xk-N7v" id="dKY-Qc-wId"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Weather" id="Iq4-J2-5W0"/>
+                    <navigationItem key="navigationItem" title="Weather" id="Iq4-J2-5W0">
+                        <barButtonItem key="rightBarButtonItem" title="Refresh" id="MQI-MK-8b1">
+                            <connections>
+                                <action selector="refreshCities:" destination="ZAj-xk-N7v" id="ceF-xy-Kbh"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
+                    <connections>
+                        <outlet property="headerView" destination="ReS-Q9-TPH" id="G7a-s3-AEa"/>
+                    </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LFm-q7-2XB" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
