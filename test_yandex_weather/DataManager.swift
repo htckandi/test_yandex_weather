@@ -137,6 +137,7 @@ class DataManager: NSObject  {
             print("XML is successfully loaded.")
             
             self.parserCities = nil
+            NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
             self.currentApplication.networkActivityIndicatorVisible = false
         });
     }
@@ -174,8 +175,55 @@ class DataManager: NSObject  {
                 weather.city = city
             }
             
+            NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
             self.currentApplication.networkActivityIndicatorVisible = false
         });
+    }
+    
+    // MARK: - Load images
+    
+    
+    func weatherImageForType (type: Bool) -> WeatherImage? {
+        if let object = weatherImageObjectForType(type) {
+            
+            print("Image exists.")
+            
+            return object
+        } else {
+            loadImages(type)
+            return nil
+        }
+    }
+    
+    func weatherImageObjectForType (type: Bool) -> WeatherImage? {
+        let fetchRequest = NSFetchRequest(entityName: "WeatherImage")
+        fetchRequest.predicate = NSPredicate(format: "type == %@", type)
+        if let object = try? managedObjectContext.executeFetchRequest(fetchRequest).first {
+            return object as? WeatherImage
+        }
+        return nil
+    }
+    
+    func loadImages (type: Bool) {
+        
+        print("Will load image.")
+        
+        currentApplication.networkActivityIndicatorVisible = true
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
+            let path = type ? Defaults.ImagesAddress.hot : Defaults.ImagesAddress.cold
+            if let URL = NSURL(string: path), let data = NSData(contentsOfURL: URL) {
+                dispatch_async(dispatch_get_main_queue(), {
+                    
+                    let entity = NSEntityDescription.insertNewObjectForEntityForName("WeatherImage", inManagedObjectContext: self.managedObjectContext) as! WeatherImage
+                    entity.data = data
+                    entity.type = type
+                    
+                    self.currentApplication.networkActivityIndicatorVisible = false
+                    print("Images is created.")
+                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
+                });
+            }
+        })
     }
     
 }

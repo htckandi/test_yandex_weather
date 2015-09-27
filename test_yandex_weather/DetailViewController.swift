@@ -9,13 +9,17 @@
 import UIKit
 import CoreData
 
-class DetailViewController: UITableViewController, NSFetchedResultsControllerDelegate {
+class DetailViewController: UIViewController {
+    
+    @IBOutlet weak var imageView: UIImageView!
+    @IBOutlet weak var labelTemperature: UILabel!
+    @IBOutlet weak var labelWeather: UILabel!
     
     var dataManager = DataManager.sharedManager
     
     var city: City? {
         didSet {
-            configureView()
+            loadCity()
         }
     }
     
@@ -24,8 +28,12 @@ class DetailViewController: UITableViewController, NSFetchedResultsControllerDel
     override func viewDidLoad() {
         super.viewDidLoad()
         self.title = city?.name
-        timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.configureView()})
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureView", name: Defaults.dataManagerDiDUpdateDataNotification, object: nil)
+        
+        timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.loadCity()})
         timer.start()
+        configureView()
     }
     
     override func didReceiveMemoryWarning() {
@@ -33,56 +41,33 @@ class DetailViewController: UITableViewController, NSFetchedResultsControllerDel
     }
     
     deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
         timer.stop()
         print("\nDetailViewController is deallocated.\n")
     }
-    
+
     
     // MARK: - Convenience
     
-    func configureView () {
+    func loadCity () {
         if let object = city {
             dataManager.loadCity(object)
         }
     }
-
-    // MARK: - Table view data source
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 1
-    }
-
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("detailCell", forIndexPath: indexPath) as! DetailCell
-        return cell
-    }
-
-    // MARK: - Fetched results controller
     
-    var fetchedResultsController: NSFetchedResultsController {
-        if _fetchedResultsController != nil {
-            return _fetchedResultsController!
-        }
-        
-        let fetchRequest = NSFetchRequest(entityName: "CityWeather")
-        fetchRequest.fetchBatchSize = 20
-        fetchRequest.predicate = NSPredicate(format: "city == %@", [city!])
-        
-        let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataManager.managedObjectContext, sectionNameKeyPath:nil, cacheName: nil)
-        aFetchedResultsController.delegate = self
-        _fetchedResultsController = aFetchedResultsController
-        
-        do {
-            try _fetchedResultsController!.performFetch()
-        } catch {
-            print("Unresolved error \(error)")
-        }
-        
-        return _fetchedResultsController!
-    }
-    var _fetchedResultsController: NSFetchedResultsController? = nil
+    func configureView () {
+        if let object = city?.weather {
+            
+            let isHot = Int(object.temperature!) > 0
+            let temperature = isHot ? "+" : ""
     
-    func controllerDidChangeContent(controller: NSFetchedResultsController) {
-        self.tableView.reloadData()
+            labelTemperature.text = temperature + object.temperature!
+            labelWeather.text = object.weatherType
+            
+            if let object = dataManager.weatherImageForType (isHot) {
+                imageView.image = UIImage(data: object.data!)
+            }
+        }
     }
+    
 }

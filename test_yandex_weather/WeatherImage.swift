@@ -1,5 +1,5 @@
 //
-//  CityWeather.swift
+//  WeatherImage.swift
 //  test_yandex_weather
 //
 //  Created by Test on 9/27/15.
@@ -9,12 +9,10 @@
 import Foundation
 import CoreData
 
-class CityWeather: NSManagedObject {
+class WeatherImage: NSManagedObject {
     
-    @NSManaged var temperature: String?
-    @NSManaged var timeStamp: NSDate?
-    @NSManaged var weatherType: String?
-    @NSManaged var city: City?
+    @NSManaged var data: NSData?
+    @NSManaged var type: NSNumber?
 
 // Insert code here to add functionality to your managed object subclass
 

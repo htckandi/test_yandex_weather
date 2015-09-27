@@ -15,9 +15,14 @@
     <entity name="TimeStamp" representedClassName=".TimeStamp" syncable="YES">
         <attribute name="time" optional="YES" attributeType="Date" syncable="YES"/>
     </entity>
+    <entity name="WeatherImage" representedClassName=".WeatherImage" syncable="YES">
+        <attribute name="data" optional="YES" attributeType="Binary" allowsExternalBinaryDataStorage="YES" syncable="YES"/>
+        <attribute name="type" optional="YES" attributeType="Boolean" syncable="YES"/>
+    </entity>
     <elements>
         <element name="City" positionX="-317" positionY="18" width="128" height="103"/>
-        <element name="CityWeather" positionX="-74" positionY="9" width="128" height="103"/>
-        <element name="TimeStamp" positionX="-587" positionY="47" width="128" height="58"/>
+        <element name="CityWeather" positionX="-65" positionY="45" width="128" height="103"/>
+        <element name="TimeStamp" positionX="-513" positionY="-0" width="128" height="58"/>
+        <element name="WeatherImage" positionX="117" positionY="81" width="128" height="73"/>
     </elements>
 </model>
