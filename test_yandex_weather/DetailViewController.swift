@@ -19,6 +19,11 @@ class DetailViewController: UIViewController {
     
     var city: City? {
         didSet {
+            
+            if let objectCity = city, let objectWeather = objectCity.weather {
+                dataManager.weatherImageForType(Int(objectWeather.temperature!) > 0)
+            }
+            
             loadCity()
         }
     }
@@ -63,6 +68,9 @@ class DetailViewController: UIViewController {
     
             labelTemperature.text = temperature + object.temperature!
             labelWeather.text = object.weatherType
+            
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
             
             if let object = dataManager.weatherImageForType (isHot) {
                 imageView.image = UIImage(data: object.data!)

@@ -30,7 +30,10 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { 
             if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://export.yandex.ru/weather-ng/forecasts/\(self.tempCity.id!).xml")!) {
                 parser.delegate = self
-                parser.parse()
+                if !parser.parse() {
+                    parser.abortParsing()
+                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDataUnavailable, object: "City")
+                }
             }
         })
     }

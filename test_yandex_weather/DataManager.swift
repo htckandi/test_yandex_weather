@@ -49,11 +49,19 @@ class DataManager: NSObject  {
     
     override init() {
         super.init()
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataUnavailable", name: Defaults.dataManagerDataUnavailable, object: nil)
         timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.loadCities() })
         timer.start()
     }
     
+    func dataUnavailable () {
+        print("\nData unavailable.\n")
+        parserCities = nil
+        currentApplication.networkActivityIndicatorVisible = false
+    }
+    
     deinit {
+        NSNotificationCenter.defaultCenter().removeObserver(self)
         timer.stop()
         print("DataManager is deallocated.")
     }
@@ -212,16 +220,21 @@ class DataManager: NSObject  {
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
             let path = type ? Defaults.ImagesAddress.hot : Defaults.ImagesAddress.cold
             if let URL = NSURL(string: path), let data = NSData(contentsOfURL: URL) {
-                dispatch_async(dispatch_get_main_queue(), {
-                    
-                    let entity = NSEntityDescription.insertNewObjectForEntityForName("WeatherImage", inManagedObjectContext: self.managedObjectContext) as! WeatherImage
-                    entity.data = data
-                    entity.type = type
-                    
-                    self.currentApplication.networkActivityIndicatorVisible = false
-                    print("Images is created.")
-                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
-                });
+                if let loadedImage = UIImage(data: data) {
+                    let resizedImage = loadedImage.imageByBestFitForSize(CGSize(width: 900, height: 900))
+                    if let resizedData = UIImageJPEGRepresentation(resizedImage, 0.75) {
+                        dispatch_async(dispatch_get_main_queue(), {
+                            let entity = NSEntityDescription.insertNewObjectForEntityForName("WeatherImage", inManagedObjectContext: self.managedObjectContext) as! WeatherImage
+                            entity.data = resizedData
+                            entity.type = type
+                            self.currentApplication.networkActivityIndicatorVisible = false
+                            print("Images is created. Data length is \(data.length). Resized data length is \(resizedData.length)")
+                            NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
+                        });
+                    }
+                }
+            } else {
+                NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDataUnavailable, object: "Image")
             }
         })
     }
