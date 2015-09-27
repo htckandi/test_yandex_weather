@@ -11,14 +11,14 @@ import CoreData
 
 class MasterViewController: UITableViewController, NSFetchedResultsControllerDelegate {
     
-    
     @IBOutlet weak var headerView: UILabel!
+    @IBOutlet weak var refreshButton: UIBarButtonItem!
     
     var dataManager = DataManager.sharedManager
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureHeader", name: Defaults.dataManagerCitiesNotAccessible, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureHeader", name: Defaults.Notifications.dataManagerInterfaceNeedsUpdate, object: nil)
         dataManager.loadCities()
     }
     
@@ -30,18 +30,28 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         super.didReceiveMemoryWarning()
     }
     
+    // MARK: - IB Actions
     
     @IBAction func refreshCities(sender: AnyObject) {
         dataManager.loadCities()
     }
     
     
+    // MARK: - Update interface
+    
     func configureHeader () {
         
         var stringValid: String
         
         if fetchedResultsController.fetchedObjects?.count > 0 {
-            stringValid = dataManager.isDataValid ? "Data valid." : "Data not valid."
+            
+            if dataManager.isDataValid {
+                stringValid = "Data valid."
+                refreshButton.enabled = false
+            } else {
+                stringValid = "Data not valid."
+            }
+            
         } else {
             stringValid = "No data"
         }
@@ -50,6 +60,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         
         if !dataManager.isDataAccessible {
             stringAccessible = "\nNo data access."
+            refreshButton.enabled = true
         }
         
         var headerString = stringValid
@@ -59,8 +70,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
         
         headerView.text = headerString
-        
     }
+    
     
     // MARK: - Segues
     
@@ -73,6 +84,7 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         }
     }
 
+    
     // MARK: - Table view data source
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
@@ -88,12 +100,12 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
-    
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("masterCell", forIndexPath: indexPath) as! MasterCell
-        cell.detailItem = fetchedResultsController.objectAtIndexPath(indexPath) as? City
+        let cell = tableView.dequeueReusableCellWithIdentifier("masterCell", forIndexPath: indexPath)
+        cell.textLabel?.text = (fetchedResultsController.objectAtIndexPath(indexPath) as! City).name
         return cell
     }
+    
     
     // MARK: - Fetched results controller
     

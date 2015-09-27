@@ -25,7 +25,6 @@
 		52A1FDE41BB7E75A00D5886C /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52A1FDE31BB7E75A00D5886C /* Extensions.swift */; settings = {ASSET_TAGS = (); }; };
 		52B0AE6E1BB526E300F2635C /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B0AE6D1BB526E300F2635C /* MasterViewController.swift */; settings = {ASSET_TAGS = (); }; };
 		52B0AE701BB526F000F2635C /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B0AE6F1BB526F000F2635C /* DetailViewController.swift */; settings = {ASSET_TAGS = (); }; };
-		52B0AE721BB5270500F2635C /* MasterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B0AE711BB5270500F2635C /* MasterCell.swift */; settings = {ASSET_TAGS = (); }; };
 		52B0AE761BB52F0400F2635C /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52B0AE751BB52F0400F2635C /* DataManager.swift */; settings = {ASSET_TAGS = (); }; };
 /* End PBXBuildFile section */
 
@@ -71,7 +70,6 @@
 		52A1FDE31BB7E75A00D5886C /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		52B0AE6D1BB526E300F2635C /* MasterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
 		52B0AE6F1BB526F000F2635C /* DetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
-		52B0AE711BB5270500F2635C /* MasterCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MasterCell.swift; sourceTree = "<group>"; };
 		52B0AE751BB52F0400F2635C /* DataManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DataManager.swift; path = test_yandex_weather/DataManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -103,9 +101,9 @@
 		525295C51BB7A549003A7246 /* Class */ = {
 			isa = PBXGroup;
 			children = (
-				52A1FDE31BB7E75A00D5886C /* Extensions.swift */,
 				520A0E511BB725B3009918C4 /* Defaults.swift */,
 				520A0E4F1BB72067009918C4 /* Timer.swift */,
+				52A1FDE31BB7E75A00D5886C /* Extensions.swift */,
 			);
 			name = Class;
 			sourceTree = "<group>";
@@ -158,7 +156,6 @@
 			isa = PBXGroup;
 			children = (
 				52B0AE6F1BB526F000F2635C /* DetailViewController.swift */,
-				52B0AE711BB5270500F2635C /* MasterCell.swift */,
 				52B0AE6D1BB526E300F2635C /* MasterViewController.swift */,
 				52705EE01BB51F9D00CD8331 /* AppDelegate.swift */,
 				52705EE41BB51F9D00CD8331 /* Main.storyboard */,
@@ -324,7 +321,6 @@
 				520A0E521BB725B3009918C4 /* Defaults.swift in Sources */,
 				52705EE91BB51F9D00CD8331 /* test_yandex_weather.xcdatamodeld in Sources */,
 				520A0E501BB72067009918C4 /* Timer.swift in Sources */,
-				52B0AE721BB5270500F2635C /* MasterCell.swift in Sources */,
 				5252C9A81BB6BEED00AD42FC /* XMLParserCity.swift in Sources */,
 				52B0AE701BB526F000F2635C /* DetailViewController.swift in Sources */,
 				52B0AE761BB52F0400F2635C /* DataManager.swift in Sources */,

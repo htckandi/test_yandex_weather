@@ -32,7 +32,7 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
                 parser.delegate = self
                 if !parser.parse() {
                     parser.abortParsing()
-                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDataNotAccessible, object: "City")
+                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.Notifications.dataManagerDataNotAccessible, object: "City")
                 }
             }
         })

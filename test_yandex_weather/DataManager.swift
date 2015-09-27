@@ -26,8 +26,8 @@ class DataManager: NSObject  {
     var timer: Timer!
     
     var timeStamp: TimeStamp? {
-        if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "TimeStamp")), let object = fetchedObjects.first as? TimeStamp {
-            return object
+        if let fetchedObjects = try? managedObjectContext.executeFetchRequest(NSFetchRequest(entityName: "TimeStamp")) {
+            return fetchedObjects.first as? TimeStamp
         }
         return nil
     }
@@ -51,34 +51,41 @@ class DataManager: NSObject  {
     
     override init() {
         super.init()
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataNotAccessible:", name: Defaults.dataManagerDataNotAccessible, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "dataNotAccessible:", name: Defaults.Notifications.dataManagerDataNotAccessible, object: nil)
         timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.loadCities() })
         timer.start()
     }
-    
-    
-    func dataNotAccessible (notification: NSNotification) {
-        
-        dispatch_async(dispatch_get_main_queue(), {
-            
-            print("\nData unavailable.\n")
-            self.parserCities = nil
-            self.currentApplication.networkActivityIndicatorVisible = false
-            self.isDataAccessible = false
-            
-            if let object = notification.object as? String {
-                if object == "Cities" {
-                    NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerCitiesNotAccessible, object: nil)
-                }
-            }
-        })
-    }
-    
+
     deinit {
         NSNotificationCenter.defaultCenter().removeObserver(self)
         timer.stop()
         print("DataManager is deallocated.")
     }
+    
+    
+    // MARK: - Data access
+    
+    func dataNotAccessible (notification: NSNotification) {
+        dispatch_async(dispatch_get_main_queue(), {
+            print("\nData not accessible.\n")
+            self.parserCities = nil
+            self.currentApplication.networkActivityIndicatorVisible = false
+            self.isDataAccessible = false
+            
+            if let object = notification.object as? String {
+                NSNotificationCenter.defaultCenter().postNotificationName(Defaults.Notifications.dataManagerInterfaceNeedsUpdate, object: object)
+            }
+        })
+    }
+    
+    func dataAccessible (type: String) {
+        self.currentApplication.networkActivityIndicatorVisible = false
+        self.isDataAccessible = true
+        NSNotificationCenter.defaultCenter().postNotificationName(Defaults.Notifications.dataManagerInterfaceNeedsUpdate, object: type)
+    }
+    
+    
+    // MARK: - Convenience
     
     func isTimeValid (date: NSDate) -> Bool {
         return NSDate().timeIntervalSinceDate(date) < (Defaults.duration - 1)
@@ -92,8 +99,10 @@ class DataManager: NSObject  {
         return names
     }
     
+    
+    // MARK: - Load Cities
+    
     func loadCities () {
-        
         print("\nIs data valid: \(isDataValid)")
         
         if !isDataValid && parserCities == nil {
@@ -111,7 +120,6 @@ class DataManager: NSObject  {
         let predicateToDelete = NSPredicate(format: "NOT SELF.name IN %@", [String](dict.keys))
         let predicateToUpdate = NSPredicate(format: "SELF.name IN %@", [String](dict.keys))
         let predicateToInsert = NSPredicate(format: "NOT SELF IN %@", existedCsNames)
-        
         
         let arraytoDelete = existedCs.filter({predicateToDelete.evaluateWithObject($0)})
         let arrayToUpdate = existedCs.filter({predicateToUpdate.evaluateWithObject($0)})
@@ -142,7 +150,6 @@ class DataManager: NSObject  {
             // Insert
             
             if !arrayToInsert.isEmpty {
-                
                 for name in arrayToInsert {
                     let entity = NSEntityDescription.insertNewObjectForEntityForName("City", inManagedObjectContext: self.managedObjectContext) as! City
                     entity.name = name
@@ -159,23 +166,22 @@ class DataManager: NSObject  {
             print("XML is successfully loaded.")
             
             self.parserCities = nil
-            self.isDataAccessible = true
-            NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
-            self.currentApplication.networkActivityIndicatorVisible = false
+            self.dataAccessible("Cities")
         });
     }
+    
+    
+    // MARK: - Load City
     
     func loadCity (city: City) {
         
         if city.weather == nil {
-            
             print("Will load weather for city: \(city.name!)")
             
             currentApplication.networkActivityIndicatorVisible = true
             XMLParserCity(city: city, handler: loadCityHandler).startParse()
 
         } else if !isTimeValid(city.weather!.timeStamp!) {
-            
             print("Will update weather for city: \(city.name!)")
             
             currentApplication.networkActivityIndicatorVisible = true
@@ -188,7 +194,7 @@ class DataManager: NSObject  {
     
     func loadCityHandler (dict: [String:String], city: City) {
         dispatch_async(dispatch_get_main_queue(), {
-            
+    
             let weather = city.weather ?? NSEntityDescription.insertNewObjectForEntityForName("CityWeather", inManagedObjectContext: self.managedObjectContext) as! CityWeather
             weather.temperature = dict["temperature"]
             weather.weatherType = dict["weather_type"]
@@ -198,20 +204,16 @@ class DataManager: NSObject  {
                 weather.city = city
             }
             
-            self.isDataAccessible = true
-            NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
-            self.currentApplication.networkActivityIndicatorVisible = false
+            self.dataAccessible("City")
         });
     }
     
-    // MARK: - Load images
     
+    // MARK: - Load images
     
     func weatherImageForType (type: Bool) -> WeatherImage? {
         if let object = weatherImageObjectForType(type) {
-            
             print("Image exists.")
-            
             return object
         } else {
             loadImages(type)
@@ -229,31 +231,35 @@ class DataManager: NSObject  {
     }
     
     func loadImages (type: Bool) {
-        
         print("Will load image.")
-        
         currentApplication.networkActivityIndicatorVisible = true
+        
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
+            
             let path = type ? Defaults.ImagesAddress.hot : Defaults.ImagesAddress.cold
+            
             if let URL = NSURL(string: path), let data = NSData(contentsOfURL: URL) {
                 if let loadedImage = UIImage(data: data) {
+                    
                     let resizedImage = loadedImage.imageByBestFitForSize(CGSize(width: 900, height: 900))
+                    
                     if let resizedData = UIImageJPEGRepresentation(resizedImage, 0.75) {
+                        
                         dispatch_async(dispatch_get_main_queue(), {
+                            
                             let entity = NSEntityDescription.insertNewObjectForEntityForName("WeatherImage", inManagedObjectContext: self.managedObjectContext) as! WeatherImage
                             entity.data = resizedData
                             entity.type = type
-                            self.currentApplication.networkActivityIndicatorVisible = false
-                            self.isDataAccessible = true
-                            print("Images is created. Data length is \(data.length). Resized data length is \(resizedData.length)")
-                            NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDiDUpdateDataNotification, object: nil)
+                            
+                            print("Image is created. Data length is \(data.length). Resized data length is \(resizedData.length)")
+                            self.dataAccessible("Image")
                         });
                     }
                 }
             } else {
-                NSNotificationCenter.defaultCenter().postNotificationName(Defaults.dataManagerDataNotAccessible, object: "Image")
+                NSNotificationCenter.defaultCenter().postNotificationName(Defaults.Notifications.dataManagerDataNotAccessible, object: "Image")
             }
         })
     }
-    
+
 }

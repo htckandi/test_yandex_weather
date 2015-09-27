@@ -13,6 +13,7 @@ import UIKit
 extension UIImage {
     
     func imageByBestFitForSize (targetSize: CGSize) -> UIImage {
+        
         let aspectRatio = self.size.width / self.size.height
         let targetHeight = targetSize.height
         let scaledWidth = targetSize.height * aspectRatio
@@ -21,6 +22,7 @@ extension UIImage {
     }
     
     func imageByScalingAndCroppingForSize (targetSize: CGSize) -> UIImage {
+        
         let sourceImage = self
         let imageSize = sourceImage.size
         let width = imageSize.width

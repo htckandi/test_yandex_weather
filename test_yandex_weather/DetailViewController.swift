@@ -34,7 +34,7 @@ class DetailViewController: UIViewController {
         super.viewDidLoad()
         self.title = city?.name
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureView", name: Defaults.dataManagerDiDUpdateDataNotification, object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureView", name: Defaults.Notifications.dataManagerInterfaceNeedsUpdate, object: nil)
         
         timer = Timer(duration: Defaults.duration, handler: { [unowned self] in self.loadCity()})
         timer.start()
@@ -63,6 +63,8 @@ class DetailViewController: UIViewController {
     func configureView () {
         if let object = city?.weather {
             
+            imageView.hidden = false
+            
             let isHot = Int(object.temperature!) > 0
             let temperature = isHot ? "+" : ""
     
@@ -75,6 +77,8 @@ class DetailViewController: UIViewController {
             if let object = dataManager.weatherImageForType (isHot) {
                 imageView.image = UIImage(data: object.data!)
             }
+        } else {
+            imageView.hidden = true
         }
     }
     

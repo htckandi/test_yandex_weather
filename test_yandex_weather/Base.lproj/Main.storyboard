@@ -21,7 +21,7 @@
                             <nil key="highlightedColor"/>
                         </label>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="masterCell" textLabel="k0a-6K-Jmo" style="IBUITableViewCellStyleDefault" id="lRN-Kc-4Tt" customClass="MasterCell" customModule="test_yandex_weather" customModuleProvider="target">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" accessoryType="disclosureIndicator" indentationWidth="10" reuseIdentifier="masterCell" textLabel="k0a-6K-Jmo" style="IBUITableViewCellStyleDefault" id="lRN-Kc-4Tt">
                                 <rect key="frame" x="0.0" y="156" width="320" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="lRN-Kc-4Tt" id="Ai9-W5-mmw">
@@ -56,6 +56,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="headerView" destination="ReS-Q9-TPH" id="G7a-s3-AEa"/>
+                        <outlet property="refreshButton" destination="MQI-MK-8b1" id="CW1-8g-CV4"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="LFm-q7-2XB" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -74,8 +75,15 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="No data" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Gjr-q2-u97">
+                                <rect key="frame" x="0.0" y="64" width="320" height="416"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                <color key="textColor" white="0.66666666666666663" alpha="1" colorSpace="calibratedWhite"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="3wc-ic-vu9">
                                 <rect key="frame" x="0.0" y="0.0" width="320" height="480"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </imageView>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" horizontalCompressionResistancePriority="751" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="a7L-sT-vbM">
                                 <rect key="frame" x="160" y="450" width="0.0" height="0.0"/>
@@ -100,10 +108,14 @@
                             <constraint firstItem="3wc-ic-vu9" firstAttribute="leading" secondItem="pYN-Cl-Rnc" secondAttribute="leading" id="JnD-K6-08s"/>
                             <constraint firstItem="Lhq-Ww-BDL" firstAttribute="top" secondItem="3wc-ic-vu9" secondAttribute="bottom" id="ZcF-ou-c18"/>
                             <constraint firstItem="a7L-sT-vbM" firstAttribute="centerX" secondItem="pYN-Cl-Rnc" secondAttribute="centerX" id="bcU-h4-uZv"/>
+                            <constraint firstItem="Lhq-Ww-BDL" firstAttribute="top" secondItem="Gjr-q2-u97" secondAttribute="bottom" id="cbr-Te-0PK"/>
                             <constraint firstAttribute="trailing" secondItem="3wc-ic-vu9" secondAttribute="trailing" id="d7M-V3-YQO"/>
                             <constraint firstItem="Gqs-iE-wTe" firstAttribute="top" secondItem="a7L-sT-vbM" secondAttribute="bottom" constant="10" id="hsf-Wd-tfl"/>
+                            <constraint firstItem="Gjr-q2-u97" firstAttribute="top" secondItem="xQF-ma-3Wt" secondAttribute="bottom" id="l6Y-uU-LHM"/>
                             <constraint firstItem="3wc-ic-vu9" firstAttribute="top" secondItem="pYN-Cl-Rnc" secondAttribute="top" id="rWu-k4-Cpq"/>
                             <constraint firstItem="Gqs-iE-wTe" firstAttribute="centerX" secondItem="pYN-Cl-Rnc" secondAttribute="centerX" id="suO-It-pth"/>
+                            <constraint firstItem="Gjr-q2-u97" firstAttribute="leading" secondItem="pYN-Cl-Rnc" secondAttribute="leading" id="u7k-XP-3xk"/>
+                            <constraint firstAttribute="trailing" secondItem="Gjr-q2-u97" secondAttribute="trailing" id="zWM-z0-fPA"/>
                         </constraints>
                     </view>
                     <connections>
