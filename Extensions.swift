@@ -10,6 +10,8 @@
 import Foundation
 import UIKit
 
+// Расширение для изменения размеров изображения
+
 extension UIImage {
     
     func imageByBestFitForSize (targetSize: CGSize) -> UIImage {

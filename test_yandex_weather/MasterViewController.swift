@@ -14,11 +14,19 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     @IBOutlet weak var headerView: UILabel!
     @IBOutlet weak var refreshButton: UIBarButtonItem!
     
+    // Создаём синглтон датаменеджера
+    
     var dataManager = DataManager.sharedManager
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Добавляем обзор уведомления от датаменеджера о необходимости обновления интерфейса пользователя
+        
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "configureHeader", name: Defaults.Notifications.dataManagerInterfaceNeedsUpdate, object: nil)
+        
+        // Отправная точка всего приложения. Первичный запрос на загрузку списка городов
+        
         dataManager.loadCities()
     }
     
@@ -33,6 +41,9 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - IB Actions
     
     @IBAction func refreshCities(sender: AnyObject) {
+        
+        // Добавляем возможность принудительного обновления списка городов с помощью кнопки Refresh в случае, если информация более не актуальна и ранее отсутствовал доступ к данным
+        
         dataManager.loadCities()
     }
     
@@ -40,6 +51,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     // MARK: - Update interface
     
     func configureHeader () {
+        
+        // Формируем информационное сообщение для пользователя, отображаемое вверху списка городов
         
         var stringValid: String
         
@@ -75,6 +88,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     // MARK: - Segues
     
+    // Передача данных о выбранном городе на экран отображения погоды
+    
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
@@ -86,22 +101,36 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
 
     
     // MARK: - Table view data source
+    
+    // Работа с основной таблицей
 
     override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
         configureHeader()
+        
+        // Определяем количество стран
+        
         return fetchedResultsController.sections?.count ?? 0
     }
 
     override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        
+        // Определяем название каждой страны
+        
         return fetchedResultsController.sections?[section].name
     }
     
     override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        // Определяем количество городов в каждой стране
+        
         return fetchedResultsController.sections?[section].numberOfObjects ?? 0
     }
 
     override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("masterCell", forIndexPath: indexPath)
+        
+        // Отображаем название города в соответствии с полученным индексом объекта в базе данных
+        
         cell.textLabel?.text = (fetchedResultsController.objectAtIndexPath(indexPath) as! City).name
         return cell
     }
@@ -109,14 +138,24 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
     
     // MARK: - Fetched results controller
     
+    // Формирование контроллера для работы с SQLite и таблицей списка городов
+    // Данный контроллер работает только с этим экраном
+    
     var fetchedResultsController: NSFetchedResultsController {
         if _fetchedResultsController != nil {
             return _fetchedResultsController!
         }
         
+        // Контроллер работает только с объектами городов
+        
         let fetchRequest = NSFetchRequest(entityName: "City")
         fetchRequest.fetchBatchSize = 20
+        
+        // Список городов сортируется в алфавитном порядке как по странам, так и по городам
+        
         fetchRequest.sortDescriptors = [NSSortDescriptor(key: "country", ascending: true), NSSortDescriptor(key: "name", ascending: true) ]
+        
+        // Список городов группируется по названию стран
         
         let aFetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataManager.managedObjectContext, sectionNameKeyPath:"country", cacheName: nil)
         aFetchedResultsController.delegate = self
@@ -131,6 +170,8 @@ class MasterViewController: UITableViewController, NSFetchedResultsControllerDel
         return _fetchedResultsController!
     }
     var _fetchedResultsController: NSFetchedResultsController? = nil
+    
+    // Действия контроллера для синхронизации изменений в базе данных и таблице
     
     func controllerWillChangeContent(controller: NSFetchedResultsController) {
         self.tableView.beginUpdates()

@@ -8,6 +8,8 @@
 
 import UIKit
 
+// Парсер для получения списка город
+
 class XMLParserCities: NSObject, NSXMLParserDelegate {
     
     var handler: ([String:[String: String]]) -> ()
@@ -25,11 +27,17 @@ class XMLParserCities: NSObject, NSXMLParserDelegate {
     }
     
     func startParse () {
+        
+        // Работа парсера осуществляется в глобальном потоке с высоким приоритетом
+        
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), {
             if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://pogoda.yandex.ru/static/cities.xml")!) {
                 parser.delegate = self
                 if !parser.parse() {
                     parser.abortParsing()
+                    
+                    // Если парсинг завершился неудачно, это говорит о недоступности информации за пределами устройства. Оповещаем об этом датаменеджер
+                    
                     NSNotificationCenter.defaultCenter().postNotificationName(Defaults.Notifications.dataManagerDataNotAccessible, object: "Cities")
                 }
             }
@@ -66,6 +74,9 @@ class XMLParserCities: NSObject, NSXMLParserDelegate {
     func parserDidEndDocument(parser: NSXMLParser) {
         print("Parser did end document.")
         if let cities = tempCities {
+            
+            // Если данные по списку городов успешно получены, передаем их в датаменеджер
+            
             handler(cities)
         }
     }

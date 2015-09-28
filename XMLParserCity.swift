@@ -8,6 +8,8 @@
 
 import UIKit
 
+// Парсер для получения погоды
+
 class XMLParserCity: NSObject, NSXMLParserDelegate {
 
     var handler: ([String:String], City) -> ()
@@ -27,11 +29,17 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
     }
     
     func startParse () {
+        
+        // Работа парсера осуществляется в глобальном потоке с высоким приоритетом
+        
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), { 
             if let parser = NSXMLParser(contentsOfURL: NSURL(string: "https://export.yandex.ru/weather-ng/forecasts/\(self.tempCity.id!).xml")!) {
                 parser.delegate = self
                 if !parser.parse() {
                     parser.abortParsing()
+                    
+                    // Если парсинг завершился неудачно, это говорит о недоступности информации за пределами устройства. Оповещаем об этом датаменеджер
+                    
                     NSNotificationCenter.defaultCenter().postNotificationName(Defaults.Notifications.dataManagerDataNotAccessible, object: "City")
                 }
             }
@@ -75,6 +83,9 @@ class XMLParserCity: NSObject, NSXMLParserDelegate {
     func parserDidEndDocument(parser: NSXMLParser) {
         print("Parser did end document.")
         if let dict = tempDict {
+            
+            // Если данные по погоде успешно получены, передаем их в датаменеджер
+            
             handler(dict,tempCity)
         }
     }

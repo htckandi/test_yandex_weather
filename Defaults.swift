@@ -8,8 +8,13 @@
 
 import Foundation
 
+// Константы заданные пользователем
+
 struct Defaults {
-    static let duration = NSTimeInterval(90)
+    
+    // В задании требуется установить интервал в 1 час, в приложении установлено 5 минут для наглядности происходящего процесса
+    
+    static let duration = NSTimeInterval(300)
     
     struct ImagesAddress {
         static let cold = "https://hikingartist.files.wordpress.com/2012/05/1-christmas-tree.jpg"
